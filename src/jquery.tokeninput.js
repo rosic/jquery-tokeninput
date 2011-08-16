@@ -1,11 +1,12 @@
-/*
+/* Forked: https://github.com/rosic/jquery-tokeninput
+ * 
  * jQuery Plugin: Tokenizing Autocomplete Text Entry
  * Version 1.4.2
  *
  * Copyright (c) 2009 James Smith (http://loopj.com)
  * Licensed jointly under the GPL and MIT licenses,
  * choose which one suits your project best!
- *
+ * 
  */
 
 (function ($) {
@@ -30,7 +31,10 @@ var DEFAULT_SETTINGS = {
     onResult: null,
     onAdd: null,
     onDelete: null,
-    allowCreation: false
+    allowCreation: false,
+    showAllButton: false,
+    showAllText: "Show All",
+    resizableInput: true
 };
 
 // Default classes to use when theming
@@ -44,7 +48,8 @@ var DEFAULT_CLASSES = {
     dropdownItem: "token-input-dropdown-item",
     dropdownItem2: "token-input-dropdown-item2",
     selectedDropdownItem: "token-input-selected-dropdown-item",
-    inputToken: "token-input-input-token"
+    inputToken: "token-input-input-token",
+    allButton: "token-input-all-button"
 };
 
 // Input box position "enum"
@@ -149,7 +154,7 @@ $.TokenList = function (input, url_or_data, settings) {
         .blur(function () {
             hide_dropdown();
         })
-        .bind("keyup keydown blur update", resize_input)
+        .bind("showall", show_all_local_data)
         .keydown(function (event) {
             var previous_token;
             var next_token;
@@ -297,19 +302,30 @@ $.TokenList = function (input, url_or_data, settings) {
         .hide();
 
     // Magic element to help us resize the text input
-    var input_resizer = $("<tester/>")
-        .insertAfter(input_box)
-        .css({
-            position: "absolute",
-            top: -9999,
-            left: -9999,
-            width: "auto",
-            fontSize: input_box.css("fontSize"),
-            fontFamily: input_box.css("fontFamily"),
-            fontWeight: input_box.css("fontWeight"),
-            letterSpacing: input_box.css("letterSpacing"),
-            whiteSpace: "nowrap"
-        });
+    if(settings.resizableInput) {
+      var input_resizer = $("<tester/>")
+          .insertAfter(input_box)
+          .css({
+              position: "absolute",
+              top: -9999,
+              left: -9999,
+              width: "auto",
+              fontSize: input_box.css("fontSize"),
+              fontFamily: input_box.css("fontFamily"),
+              fontWeight: input_box.css("fontWeight"),
+              letterSpacing: input_box.css("letterSpacing"),
+              whiteSpace: "nowrap"
+          });
+      input_box.bind("keyup keydown blur update", resize_input);
+    }
+
+    var show_all_button = $("<a>"+settings.showAllText+"</a>")
+    if(settings.showAllButton) {
+          show_all_button.insertAfter(input_box)
+          .addClass(settings.classes.allButton)
+          .attr("title", settings.showAllText)
+          .bind("click", function(e) { input_box.trigger("showall"); return false;})          
+    }
 
     // Pre-populate list if items exist
     hidden_input.val("");
@@ -379,6 +395,7 @@ $.TokenList = function (input, url_or_data, settings) {
         // Check the token limit
         if(settings.tokenLimit !== null && token_count >= settings.tokenLimit) {
             input_box.hide();
+            show_all_button.hide();
             hide_dropdown();
         }
 
@@ -416,6 +433,7 @@ $.TokenList = function (input, url_or_data, settings) {
         // Check the token limit
         if(settings.tokenLimit !== null && token_count >= settings.tokenLimit) {
             input_box.hide();
+            show_all_button.hide();
         } else {
             input_box.focus();
             // Clear input box
@@ -507,6 +525,7 @@ $.TokenList = function (input, url_or_data, settings) {
         token_count -= 1;
 
         if(settings.tokenLimit !== null) {
+            show_all_button.show();
             input_box
                 .show()
                 .val("")
@@ -640,6 +659,12 @@ $.TokenList = function (input, url_or_data, settings) {
             } else {
                 hide_dropdown();
             }
+        }
+    }
+
+    function show_all_local_data() {
+       if(settings.local_data) {
+            populate_dropdown('', settings.local_data);
         }
     }
 
