@@ -1,3 +1,4 @@
 _site
 _layouts
 *.swp
+.DS_Store
