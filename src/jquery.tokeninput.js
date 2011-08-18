@@ -40,6 +40,7 @@ var DEFAULT_SETTINGS = {
     tokenDelimiter: ",",
     preventDuplicates: false,
     tokenValue: "id",
+    tokenFactory: function(text) { return {name: text + ' (new)', id: text}; },
 
     // Callbacks
     onResult: null,
@@ -276,6 +277,7 @@ $.TokenList = function (input, url_or_data, settings) {
                   if(selected_dropdown_item) {
                     add_token($(selected_dropdown_item).data("tokeninput"));
                     hidden_input.change();
+                    e.stopPropagation();
                     return false;
                   }
                   break;
@@ -463,6 +465,7 @@ $.TokenList = function (input, url_or_data, settings) {
                 (keycode >= 186 && keycode <= 192) ||   // ; = , - . / ^
                 (keycode >= 219 && keycode <= 222));    // ( \ ) '
     }
+
 
     // Inner function to a token to the list
     function insert_token(item) {
@@ -825,7 +828,7 @@ $.TokenList = function (input, url_or_data, settings) {
                   }
                   
                   if(settings.allowCreation) {
-                      results.push({name: input_box.val() + ' (new)', id: input_box.val()});
+                      results.push(settings.tokenFactory(input_box.val()));
                   }
                   cache.add(cache_key, settings.jsonContainer ? results[settings.jsonContainer] : results);
 
@@ -848,7 +851,7 @@ $.TokenList = function (input, url_or_data, settings) {
                 }
                 
                 if(settings.allowCreation) {
-                    results.push({name: input_box.val() + ' (new)', id: input_box.val()});
+                    results.push(settings.tokenFactory(input_box.val()));
                 }
                 
                 cache.add(cache_key, results);
