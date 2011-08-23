@@ -661,7 +661,7 @@ $.TokenList = function (input, url_or_data, settings) {
                 position: "absolute",
                 top: $(token_list).offset().top + $(token_list).outerHeight() + 2,
                 left: $(token_list).offset().left + 2,
-                'z-index': 999
+                'z-index': 1002 // greater then jquery dialog's overlay
             })
             .show();
     }
