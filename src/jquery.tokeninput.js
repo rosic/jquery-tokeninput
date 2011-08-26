@@ -39,6 +39,7 @@ var DEFAULT_SETTINGS = {
     tokenLimit: null,
     tokenDelimiter: ",",
     preventDuplicates: false,
+    checkDuplicity: function(selected, existing) { return existing && existing.id === selected.id },
     tokenValue: "id",
     tokenFactory: function(text) { return {name: text + ' (new)', id: text}; },
 
@@ -46,6 +47,7 @@ var DEFAULT_SETTINGS = {
     onResult: null,
     onAdd: null,
     onDelete: null,
+    onCanDelete: function(item) { return true; },
     onReady: null,
     
     // Other settings
@@ -516,7 +518,7 @@ $.TokenList = function (input, url_or_data, settings) {
             token_list.children().each(function () {
                 var existing_token = $(this);
                 var existing_data = $.data(existing_token.get(0), "tokeninput");
-                if(existing_data && existing_data.id === item.id) {
+                if(settings.checkDuplicity(item, existing_data)) {
                     found_existing_token = existing_token;
                     return false;
                 }
@@ -606,6 +608,10 @@ $.TokenList = function (input, url_or_data, settings) {
         // Remove the id from the saved list
         var token_data = $.data(token.get(0), "tokeninput");
         var callback = settings.onDelete;
+
+        var canDelete = settings.onCanDelete;
+        if($.isFunction(canDelete) && !canDelete.call(hidden_input, token_data))
+           return;
 
         var index = token.prevAll().length;
         if(index > selected_token_index) index--;
@@ -901,3 +907,5 @@ $.TokenList.Cache = function (options) {
     };
 };
 }(jQuery));
+
+
